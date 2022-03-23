@@ -20,5 +20,9 @@ main:
   driver := ds18b20.Driver
       one_wire.Protocol --rx=rx_channel --tx=tx_channel
 
+  is_parasitic := driver.is_parasitic
+  print "is parasitic: $is_parasitic"
+  if is_parasitic: return
+
   (Duration --s=5).periodic:
     print "Temperature: $(%.2f driver.read_temperature_C) C"

@@ -38,3 +38,8 @@ class Driver:
     bytes := ow.write_then_read #[SKIP_ROM_, READ_SCRATCHPAD_] 2
     // Abort reading scratchpad.
     return LITTLE_ENDIAN.int16 bytes 0
+
+  is_parasitic -> bool:
+    // We only need to read a single bit, but the 1-wire lib does not support that atm.
+    result := ow.write_then_read #[SKIP_ROM_, READ_POWER_SUPPLY_] 1
+    return result[0] == 0
