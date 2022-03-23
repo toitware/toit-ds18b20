@@ -1,0 +1,3 @@
+dependencies:
+  ds18b20:
+    path: ..

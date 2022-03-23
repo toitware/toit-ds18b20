@@ -1,0 +1,5 @@
+prefixes:
+  ds18b20: ..
+packages:
+  ..:
+    path: ..
