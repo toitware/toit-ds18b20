@@ -6,9 +6,19 @@ import binary show LITTLE_ENDIAN
 import one_wire
 
 class Driver:
+  // Rom commands
+  static READ_ROM_ ::= 0x33
+  static MATCH_ROM_ ::= 0x55
   static SKIP_ROM_ ::= 0xCC
+
+  static ALARM_SEARCH_ ::= 0xEC
   static CONVERT_TEMPERATURE_ ::= 0x44
+  static WRITE_SCRATCHPAD_ ::= 0x4E
   static READ_SCRATCHPAD_ ::= 0xBE
+  static COPY_SCRATCHPAD_ ::= 0x48
+  static RECALL_E2_ ::= 0xB8
+  static READ_POWER_SUPPLY_ ::= 0xB4
+
 
   ow/one_wire.Protocol
 
