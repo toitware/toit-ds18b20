@@ -20,26 +20,34 @@ class Driver:
   static READ_POWER_SUPPLY_ ::= 0xB4
 
 
-  ow/one_wire.Protocol
+  ow_ /one_wire.Protocol
 
-  constructor .ow:
+  /**
+  Constructs an instance of the DS18B20 sensor driver.
+  */
+  constructor .ow_:
 
-  read_temperature_C -> float:
+  /**
+  Reads the temperature and returns it in degrees Celsius.
+  */
+  read_temperature -> float:
     return raw_read_ / 16.0
 
   raw_read_ -> int:
-    ow.reset
+    ow_.reset
     // Convert temperature.
-    ow.write_byte SKIP_ROM_
-    ow.write_byte CONVERT_TEMPERATURE_
+    ow_.write_byte SKIP_ROM_
+    ow_.write_byte CONVERT_TEMPERATURE_
     sleep --ms=750
-    ow.reset
+    ow_.reset
     // Read scratchpad.
-    bytes := ow.write_then_read #[SKIP_ROM_, READ_SCRATCHPAD_] 2
-    // Abort reading scratchpad.
+    bytes := ow_.write_then_read #[SKIP_ROM_, READ_SCRATCHPAD_] 2
     return LITTLE_ENDIAN.int16 bytes 0
 
+  /** Whether the sensor is in parasitic mode (as reported by the sensor). */
   is_parasitic -> bool:
-    // We only need to read a single bit, but the 1-wire lib does not support that atm.
-    result := ow.write_then_read #[SKIP_ROM_, READ_POWER_SUPPLY_] 1
-    return result[0] == 0
+    ow_.reset
+    ow_.write_byte SKIP_ROM_
+    ow_.write_byte READ_POWER_SUPPLY_
+    result := ow_.read_bits 1
+    return result == 0

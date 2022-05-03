@@ -7,22 +7,19 @@ import one_wire
 import rmt
 import gpio
 
-GPIO_PIN_NUM ::=  17
+GPIO_PIN_NUM ::=  25
 
 RX_CHANNEL_NUM ::= 0
 TX_CHANNEL_NUM ::= 1
 
 main:
   pin := gpio.Pin GPIO_PIN_NUM
-  rx_channel := rmt.Channel pin RX_CHANNEL_NUM
-  tx_channel := rmt.Channel pin TX_CHANNEL_NUM
-
-  driver := ds18b20.Driver
-      one_wire.Protocol --rx=rx_channel --tx=tx_channel
+  ow := one_wire.Protocol pin
+  driver := ds18b20.Driver ow
 
   is_parasitic := driver.is_parasitic
   print "is parasitic: $is_parasitic"
   if is_parasitic: return
 
   (Duration --s=5).periodic:
-    print "Temperature: $(%.2f driver.read_temperature_C) C"
+    print "Temperature: $(%.2f driver.read_temperature) C"
