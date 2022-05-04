@@ -4,13 +4,9 @@
 
 import ds18b20
 import one_wire
-import rmt
 import gpio
 
 GPIO_PIN_NUM ::=  25
-
-RX_CHANNEL_NUM ::= 0
-TX_CHANNEL_NUM ::= 1
 
 main:
   pin := gpio.Pin GPIO_PIN_NUM
