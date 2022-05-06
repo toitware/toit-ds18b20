@@ -36,18 +36,17 @@ class Driver:
   raw_read_ -> int:
     ow_.reset
     // Convert temperature.
-    ow_.write_byte SKIP_ROM_
-    ow_.write_byte CONVERT_TEMPERATURE_
+    ow_.write #[SKIP_ROM_, CONVERT_TEMPERATURE_]
     sleep --ms=750
     ow_.reset
     // Read scratchpad.
-    bytes := ow_.write_then_read #[SKIP_ROM_, READ_SCRATCHPAD_] 2
+    ow_.write #[SKIP_ROM_, READ_SCRATCHPAD_]
+    bytes := ow_.read 2
     return LITTLE_ENDIAN.int16 bytes 0
 
   /** Whether the sensor is in parasitic mode (as reported by the sensor). */
   is_parasitic -> bool:
     ow_.reset
-    ow_.write_byte SKIP_ROM_
-    ow_.write_byte READ_POWER_SUPPLY_
+    ow_.write #[SKIP_ROM_, READ_POWER_SUPPLY_]
     result := ow_.read_bits 1
     return result == 0
