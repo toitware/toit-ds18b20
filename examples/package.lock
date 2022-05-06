@@ -8,5 +8,5 @@ packages:
       one_wire: toit-1-wire
   toit-1-wire:
     url: github.com/toitware/toit-1-wire
-    version: 1.0.1
-    hash: 17d0533a96eb2d35a7ae36fd2788a8ff368e4b93
+    version: 1.1.0
+    hash: d35ec32abeb41b1641a1572fa4a524e03666a0e9
