@@ -1,6 +1,3 @@
 dependencies:
   ds18b20:
     path: ..
-  one_wire:
-    url: github.com/toitware/toit-1-wire
-    version: ^1.2.0

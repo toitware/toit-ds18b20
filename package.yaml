@@ -1,4 +1,3 @@
 dependencies:
   one_wire:
-    url: github.com/toitware/toit-1-wire
-    version: ^1.2.0
+    path: ../toit-1-wire
