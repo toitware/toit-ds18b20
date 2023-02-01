@@ -133,14 +133,73 @@ class Ds18b20:
     if not raw: throw "INVALID ARGUMENT"
     if id == null and not is_single_:
       throw "BROADCAST TEMPERATURE READ NOT SUPPORTED"
+    do_conversion --power=power
+    return read_temperature_from_scratchpad --raw
+
+  /**
+  Reads the temperature from the scratchpad and returns it in degrees Celsius.
+
+  The scratchpad contains the last temperature measurement the device has
+    performed. This method does not start a new measurement.
+  */
+  read_temperature_from_scratchpad -> float:
+    return (read_temperature_from_scratchpad --raw) / 16.0
+
+  /**
+  Reads the temperature from the scratchpad and returns the raw value as
+    returned by the sensor.
+
+  The scratchpad contains the last temperature measurement the device has
+    performed. This method does not start a new measurement.
+  */
+  read_temperature_from_scratchpad --raw/bool -> int:
+    if not raw: throw "INVALID ARGUMENT"
+    if is_closed: throw "CLOSED"
+    if id == null and not is_single_:
+      throw "BROADCAST TEMPERATURE READ NOT SUPPORTED"
+
     if not bus_.reset:
       throw "NO DEVICE FOUND"
+    // Read scratchpad.
+    select_self_
+    bus_.write_byte READ_SCRATCHPAD_
+    bytes := bus_.read 2
+    return LITTLE_ENDIAN.int16 bytes 0
+
+  /**
+  Starts a temperature conversion (measurement).
+
+  If $wait is true, then waits until the conversion is done.
+
+  If the sensor is parasitic, automatically uses the 'power' feature of the
+    bus, unless the $power parameter is set to false.
+
+  A conversion can take up to 750ms. If $wait is false, then the conversion
+    is started, but the method returns immediately. The caller can then
+    use $(read_temperature) to obtain the result. It is generally not
+    recommended to disable $wait.
+
+  This function is primarily useful if this instance is a broadcast instance
+    and multiple devices are connected to the bus. In that case, multiple
+    sensors can start a conversion at the same time, and the caller can
+    then use $(read_temperature) on the individual sensors to obtain the
+    results.
+  */
+  do_conversion --power/bool=true --wait/bool=true:
+    if is_closed: throw "CLOSED"
+
     // Check whether we are parasitic first.
     // We might need to communicate with the device to determine this.
     power = power and is_parasitic
+
+    if not bus_.reset:
+      throw "NO DEVICE FOUND"
+
     // Convert temperature.
     select_self_
     bus_.write_byte CONVERT_TEMPERATURE_ --activate_power=power
+    if not wait: return
+
     if is_parasitic:
       sleep --ms=750
     else:
@@ -150,13 +209,6 @@ class Ds18b20:
       for i := 0; i < 750; i += 5:
         sleep --ms=5
         if bus_.read_bit == 1: break
-
-    bus_.reset
-    // Read scratchpad.
-    select_self_
-    bus_.write_byte READ_SCRATCHPAD_
-    bytes := bus_.read 2
-    return LITTLE_ENDIAN.int16 bytes 0
 
   /**
   Whether the sensor is in parasitic mode.
