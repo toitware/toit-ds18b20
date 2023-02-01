@@ -10,6 +10,11 @@ import one_wire
 Driver for the Ds18b20 temperature sensor.
 */
 class Ds18b20:
+  static RESOLUTION_9_BITS ::= 9
+  static RESOLUTION_10_BITS ::= 10
+  static RESOLUTION_11_BITS ::= 11
+  static RESOLUTION_12_BITS ::= 12
+
   // Rom commands.
   static READ_ROM_ ::= 0x33
   static MATCH_ROM_ ::= 0x55
@@ -26,6 +31,8 @@ class Ds18b20:
 
   /** Whether this device is the only one on the bus. */
   is_single_ /bool
+
+  is_parasitic_/bool? := null
 
   /**
   The id of the device.
@@ -142,12 +149,174 @@ class Ds18b20:
   */
   is_parasitic -> bool:
     if is_closed: throw "CLOSED"
+    if is_parasitic_ != null: return is_parasitic_
     if not bus_.reset:
       throw "NO DEVICE FOUND"
     select_self_
     bus_.write_byte READ_POWER_SUPPLY_
     result := bus_.read_bits 1
-    return result == 0
+    is_parasitic_ = result == 0
+    return is_parasitic_
+
+  /**
+  Reads the scratchpad and returns the raw bytes.
+
+  The scratchpad is the DS18B20's memory. It contains the temperature, the
+    alarm temperatures, the configuration register, and the CRC. Unless
+    committed to EEPROM, the scratchpad is volatile and is reset to the
+    EEPROM values on power up.
+
+  If $check_crc is true, then verifies the CRC of the scratchpad (the last byte).
+
+  The result contains the following bytes:
+  - 0: temperature LSB
+  - 1: temperature MSB
+  - 2: high alarm temperature
+  - 3: low alarm temperature
+  - 4: configuration register
+  - 5: reserved
+  - 6: reserved
+  - 7: reserved
+  - 8: CRC
+
+  The raw temperature value can also be obtained with
+    $(Ds18b20.read_temperature --raw) which simply reads the first two bytes of the
+    scratchpad.
+  */
+  read_scratchpad --check_crc/bool=true -> ByteArray:
+    if is_closed: throw "CLOSED"
+    if id == null and not is_single_:
+      throw "BROADCAST SCRATCHPAD READ NOT SUPPORTED"
+    if not bus_.reset:
+      throw "NO DEVICE FOUND"
+    select_self_
+    bus_.write_byte READ_SCRATCHPAD_
+    result := bus_.read 9
+    // Check that the crc is correct.
+    if check_crc:
+      crc := one_wire.Bus.crc8 --bytes=result[..8]
+      if crc != result[8]:
+        throw "CRC ERROR"
+    return result
+
+  /**
+  Writes the given $bytes to the scratchpad.
+
+  The scratchpad is the DS18B20's memory. It contains the temperature, the
+    alarm temperatures, the configuration register, and the CRC. Unless
+    committed to EEPROM, the scratchpad is volatile and is reset to the
+    EEPROM values on power up. Use $commit to automatically copy the
+    scratchpad values to EEPROM. Alternatively, call
+    $copy_scratchpad_to_eeprom to copy the scratchpad values to EEPROM.
+
+  The $bytes must be an array of 3 bytes. The first two bytes are the high and
+    low alarm temperatures (in that order). The third byte is the configuration
+    register.
+
+  The low and high alarm temperatures are 8-bit values. They are compared
+    against the temperature in the scratchpad. If the temperature is outside
+    the range, then the alarm flag is set. The alarm flag is cleared when the
+    temperature is read. Since raw temperature values have a resolution of 12
+    bits, but the alarm registers are limited to 8 bits, only bits
+    11 through 4 of the raw temperature values are used for the comparison.
+    Practically speaking, this means that the alarm temperatures can only
+    be accurate to up to 1 degree Celsius.
+
+  If the alarm functionality of the DS18B20 is not used, these registers can
+    be used to store arbitrary data.
+
+  The configuration register is a 8-bit value. Bit 7, and bits 0 through 4 are
+    reserved for internal use and can't be overwritten. Only bits 5 and 6
+    can be changed. They are used, to set the resolution of the temperature
+    readings. The resolution is set by the following table:
+
+  ```
+  | Bits 5 and 6 | Resolution | Register value |
+  | ------------ | ---------- | -------------- |
+  | 0 0          | 9 bits     | 0x1F           |
+  | 0 1          | 10 bits    | 0x3F           |
+  | 1 0          | 11 bits    | 0x5F           |
+  | 1 1          | 12 bits    | 0x7F           |
+  ```
+  */
+  write_scratchpad bytes/ByteArray --commit/bool=false:
+    if bytes.size != 3: throw "INVALID ARGUMENT"
+    if is_closed: throw "CLOSED"
+    if not bus_.reset:
+      throw "NO DEVICE FOUND"
+    select_self_
+    bus_.write_byte WRITE_SCRATCHPAD_
+    bus_.write bytes
+    if commit: copy_scratchpad_to_eeprom
+
+  /**
+  Writes the given values to the scratchpad.
+
+  The scratchpad is the DS18B20's memory. It contains the temperature, the
+    alarm temperatures, the configuration register, and the CRC. Unless
+    committed to EEPROM, the scratchpad is volatile and is reset to the
+    EEPROM values on power up. Use $commit to automatically copy the
+    scratchpad values to EEPROM. Alternatively, call
+    $copy_scratchpad_to_eeprom to copy the scratchpad values to EEPROM.
+
+  Every time the sensor measures the temperature it compares the
+    value with the $high_alarm_temperature and $low_alarm_temperature
+    values. If the temperature is outside the range, then the alarm flag
+    is set. The alarm flag is cleared automatically at the next read.
+
+  The resolution can be either 9, 10, 11, or 12 bits. The higher the
+    resolution, the longer the conversion (measurement) time:
+  - $RESOLUTION_9_BITS, 93.75 ms
+  - $RESOLUTION_10_BITS, 187.5 ms
+  - $RESOLUTION_11_BITS, 375 ms
+  - $RESOLUTION_12_BITS, 750 ms
+  */
+  write_scratchpad
+      --high_alarm_temperature/float
+      --low_alarm_temperature/float
+      --resolution/int=RESOLUTION_12_BITS
+      --commit/bool=false:
+    high_int := high_alarm_temperature.round.to_int
+    low_int := low_alarm_temperature.round.to_int
+    if not -128 <= high_int <= 127: throw "HIGH ALARM TEMPERATURE OUT OF RANGE"
+    if not -128 <= low_int <= 127: throw "LOW ALARM TEMPERATURE OUT OF RANGE"
+    if not RESOLUTION_9_BITS <= resolution <= RESOLUTION_12_BITS: throw "INVALID_ARGUMENT"
+    config_value := (12 - resolution) << 5
+    write_scratchpad
+        #[high_int, low_int, config_value]
+        --commit=commit
+
+  /**
+  Writes the scratchpad values to EEPROM.
+
+  Commits the alarm temperatures and the configuration to the EEPROM. The
+    next time the sensor is powered up, it automatically loads the values
+    from the EEPROM.
+
+  If the sensor is parasitic, automatically uses the 'power' feature of the
+    bus, unless the $power parameter is set to false.
+  */
+  copy_scratchpad_to_eeprom --power/bool=true:
+    if is_closed: throw "CLOSED"
+    power = power and is_parasitic
+    if not bus_.reset:
+      throw "NO DEVICE FOUND"
+    select_self_
+    bus_.write_byte COPY_SCRATCHPAD_ --activate_power=power
+    if is_parasitic: sleep --ms=10
+
+  /**
+  Reads the EEPROM values into the scratchpad.
+
+  Reads the alarm temperatures and the configuration from the EEPROM into
+    the scratchpad.
+  */
+  recall_eeprom:
+    if is_closed: throw "CLOSED"
+    if not bus_.reset:
+      throw "NO DEVICE FOUND"
+    select_self_
+    bus_.write_byte RECALL_E2_
 
   select_self_:
     if not is_single_ and not is_broadcast:
