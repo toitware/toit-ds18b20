@@ -153,12 +153,17 @@ class Ds18b20:
     if is_parasitic:
       sleep --ms=750
     else:
+      conversion_done := false
       // Actively check whether the conversion is done.
       // The sensor responsd with a '0' bit while it is busy, and
       // a '1' bit when it is done.
       for i := 0; i < 750; i += 5:
         sleep --ms=5
-        if bus_.read_bit == 1: break
+        if bus_.read_bit == 1:
+          conversion_done = true
+          break
+      if not conversion_done:
+        throw "CONVERSION TIMEOUT"
 
     bus_.reset
     // Read scratchpad.
