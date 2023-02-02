@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Toitware ApS. All rights reserved.
+// Copyright (C) 2023 Toitware ApS. All rights reserved.
 // Use of this source code is governed by an MIT-style license that can be found
 // in the LICENSE file.
 
@@ -14,6 +14,15 @@ class Ds18b20:
   static RESOLUTION_10_BITS ::= 10
   static RESOLUTION_11_BITS ::= 11
   static RESOLUTION_12_BITS ::= 12
+
+  /** The index of the high alarm temperature when reading the scratchpad. */
+  static ALARM_HIGH_READ_INDEX ::= 2
+  /** The index of the low alarm temperature when reading the scratchpad. */
+  static ALARM_LOW_READ_INDEX ::= 3
+  /** The index of the high alarm temperature when writing the scratchpad. */
+  static ALARM_HIGH_WRITE_INDEX ::= 0
+  /** The index of the low alarm temperature when writing the scratchpad. */
+  static ALARM_LOW_WRITE_INDEX ::= 1
 
   // Rom commands.
   static READ_ROM_ ::= 0x33
@@ -80,7 +89,7 @@ class Ds18b20:
   All commands are sent to all devices on the bus.
 
   If $is_single is true, then the driver assumes there is only one device on the
-    bus. In that case, this instance behaves similar to one constructed with
+    bus. In that case, this instance behaves similarly to one constructed with
     $(Ds18b20.constructor pin).
   */
   constructor.broadcast --bus/one_wire.Bus --is_single/bool=false:
@@ -203,12 +212,17 @@ class Ds18b20:
     if is_parasitic:
       sleep --ms=750
     else:
+      conversion_done := false
       // Actively check whether the conversion is done.
-      // The sensor responsd with a '0' bit while it is busy, and
+      // The sensor responds with a '0' bit while it is busy, and
       // a '1' bit when it is done.
       for i := 0; i < 750; i += 5:
         sleep --ms=5
-        if bus_.read_bit == 1: break
+        if bus_.read_bit == 1:
+          conversion_done = true
+          break
+      if not conversion_done:
+        throw "CONVERSION TIMEOUT"
 
   /**
   Whether the sensor is in parasitic mode.
@@ -241,8 +255,8 @@ class Ds18b20:
   The result contains the following bytes:
   - 0: temperature LSB
   - 1: temperature MSB
-  - 2: high alarm temperature
-  - 3: low alarm temperature
+  - 2: high alarm temperature  ($ALARM_HIGH_READ_INDEX)
+  - 3: low alarm temperature   ($ALARM_LOW_READ_INDEX)
   - 4: configuration register
   - 5: reserved
   - 6: reserved
@@ -281,7 +295,8 @@ class Ds18b20:
 
   The $bytes must be an array of 3 bytes. The first two bytes are the high and
     low alarm temperatures (in that order). The third byte is the configuration
-    register.
+    register. Use $ALARM_HIGH_WRITE_INDEX and $ALARM_LOW_WRITE_INDEX to
+    write to the alarm temperatures.
 
   The low and high alarm temperatures are 8-bit values. They are compared
     against the temperature in the scratchpad. If the temperature is outside
@@ -351,7 +366,8 @@ class Ds18b20:
     if not -128 <= high_int <= 127: throw "HIGH ALARM TEMPERATURE OUT OF RANGE"
     if not -128 <= low_int <= 127: throw "LOW ALARM TEMPERATURE OUT OF RANGE"
     if not RESOLUTION_9_BITS <= resolution <= RESOLUTION_12_BITS: throw "INVALID_ARGUMENT"
-    config_value := (12 - resolution) << 5
+    config_value := (resolution - RESOLUTION_9_BITS) << 5
+    assert: ALARM_HIGH_WRITE_INDEX == 0 and ALARM_LOW_WRITE_INDEX == 1
     write_scratchpad
         #[high_int, low_int, config_value]
         --commit=commit
