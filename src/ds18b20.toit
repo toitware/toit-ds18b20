@@ -41,9 +41,17 @@ class Ds18b20:
   Assumes there is only one sensor connected to the given $pin.
   If there are multiple sensors, then the driver misbehaves. In that
     case use $(Ds18b20.constructor --id --bus) instead.
+
+  If $pull_up is true, then uses the pin's pullup resistor to power the
+    1-wire bus. Many modules that take 3 inputs (VCC, GND, DATA) already
+    connect the DATA pin to the VCC using a 4.7k resistor. In that case,
+    no additional pullup resistor is needed, and this parameter should
+    not be used.
+
+  If $skip_id_read is true, then the driver does not read the device id.
   */
-  constructor pin/gpio.Pin --skip_id_read/bool=false:
-    bus_ = one_wire.Bus pin
+  constructor pin/gpio.Pin --skip_id_read/bool=false --pull_up/bool=false:
+    bus_ = one_wire.Bus pin --pull_up=pull_up
     owns_bus_ = true
     is_single_ = true
     id = skip_id_read ? null : bus_.read_device_id
