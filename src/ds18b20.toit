@@ -122,26 +122,49 @@ class Ds18b20:
 
   /**
   Reads the temperature and returns it in degrees Celsius.
+
+  If the sensor is parasitic, automatically uses the 'power' feature of the
+    bus, unless the $power parameter is set to false.
   */
-  read_temperature -> float:
+  read_temperature --power/bool=true -> float:
     if is_closed: throw "CLOSED"
-    return (read_temperature --raw) / 16.0
+    return (read_temperature --raw --power=power) / 16.0
 
   /**
   Reads the temperature and returns the raw value as returned by the sensor.
 
   For the DS18B20, the raw value is 16 times the temperature in degrees Celsius.
+
+  If the sensor is parasitic, automatically uses the 'power' feature of the
+    bus, unless the $power parameter is set to false.
   */
-  read_temperature --raw/bool -> int:
+  read_temperature --raw/bool --power/bool=true -> int:
     if not raw: throw "INVALID ARGUMENT"
     if id == null and not is_single_:
       throw "BROADCAST TEMPERATURE READ NOT SUPPORTED"
     if not bus_.reset:
       throw "NO DEVICE FOUND"
+    // Check whether we are parasitic first.
+    // We might need to communicate with the device to determine this.
+    power = power and is_parasitic
     // Convert temperature.
     select_self_
-    bus_.write_byte CONVERT_TEMPERATURE_
-    sleep --ms=750
+    bus_.write_byte CONVERT_TEMPERATURE_ --activate_power=power
+    if is_parasitic:
+      sleep --ms=750
+    else:
+      conversion_done := false
+      // Actively check whether the conversion is done.
+      // The sensor responds with a '0' bit while it is busy, and
+      // a '1' bit when it is done.
+      for i := 0; i < 750; i += 5:
+        sleep --ms=5
+        if bus_.read_bit == 1:
+          conversion_done = true
+          break
+      if not conversion_done:
+        throw "CONVERSION TIMEOUT"
+
     bus_.reset
     // Read scratchpad.
     select_self_
