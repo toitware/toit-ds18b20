@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Toitware ApS. All rights reserved.
+// Copyright (C) 2023 Toitware ApS. All rights reserved.
 // Use of this source code is governed by an MIT-style license that can be found
 // in the LICENSE file.
 
@@ -73,7 +73,7 @@ class Ds18b20:
   All commands are sent to all devices on the bus.
 
   If $is_single is true, then the driver assumes there is only one device on the
-    bus. In that case, this instance behaves similar to one constructed with
+    bus. In that case, this instance behaves similarly to one constructed with
     $(Ds18b20.constructor pin).
   */
   constructor.broadcast --bus/one_wire.Bus --is_single/bool=false:
