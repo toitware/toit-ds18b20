@@ -20,7 +20,7 @@ main:
   ds18b20.write_scratchpad #[
     0x12,
     0x34,
-    scratchpad[4],  // The resolution is the 5th byte of the read bytes.
+    scratchpad[4],  // The resolution is in position 4 of the read bytes.
   ]
 
   // We can read the scratchpad back:
