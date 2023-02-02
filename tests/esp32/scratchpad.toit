@@ -47,7 +47,7 @@ run_test device/ds18b20.Ds18b20 --parasitic/bool:
   expect_equals 9 scratchpad.size
   expect_equals high scratchpad[2]
   expect_equals low scratchpad[3]
-  // The ds18b20 forces the configuration bit 8 to 0, and bits 0-4 to 1.
+  // The DS18B20 forces the configuration bit 8 to 0, and bits 0-4 to 1.
   expect_equals 0x7F scratchpad[4]
 
   // Commit the values to the EEPROM.
