@@ -155,7 +155,7 @@ class Ds18b20:
     else:
       conversion_done := false
       // Actively check whether the conversion is done.
-      // The sensor responsd with a '0' bit while it is busy, and
+      // The sensor responds with a '0' bit while it is busy, and
       // a '1' bit when it is done.
       for i := 0; i < 750; i += 5:
         sleep --ms=5
