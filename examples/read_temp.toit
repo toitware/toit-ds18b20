@@ -23,6 +23,6 @@ main:
     print "Temperature: $(%.2f ds18b20.read_temperature) C"
 
   // The following close isn't necessary, as the periodic timer above will
-  // never stop. In other cases, it is important to close the ds18b20.
+  // never stop. In other cases, it is important to close the DS18B20.
   ds18b20.close
   pin.close
