@@ -4,3 +4,6 @@ dependencies:
   one_wire:
     url: github.com/toitware/toit-1-wire
     version: ^2.1.0
+
+environment:
+  sdk: ^2.0.0-alpha.144

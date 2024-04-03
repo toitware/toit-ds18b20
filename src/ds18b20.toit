@@ -2,7 +2,7 @@
 // Use of this source code is governed by an MIT-style license that can be found
 // in the LICENSE file.
 
-import binary show LITTLE_ENDIAN
+import io show LITTLE_ENDIAN
 import gpio
 import one_wire
 
