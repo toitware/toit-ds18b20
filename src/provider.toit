@@ -30,6 +30,9 @@ class TemperatureSensor implements providers.TemperatureSensor-v1:
     return sensor_.read_temperature
 
   close -> none:
+    if bus_:
+      bus_.close
+      bus_ = null
     if sensor_:
       sensor_.close
       sensor_ = null
