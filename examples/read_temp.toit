@@ -5,10 +5,10 @@
 import ds18b20 show Ds18b20
 import gpio
 
-GPIO_PIN_NUM ::= 32
+GPIO-PIN-NUM ::= 32
 
 main:
-  pin := gpio.Pin GPIO_PIN_NUM
+  pin := gpio.Pin GPIO-PIN-NUM
 
   // For parasitic devices, the data-pin is frequently not yet pulled up
   // by a resistor. In this case, use the '--pull_up' flag to use the pin's
@@ -16,11 +16,11 @@ main:
   // strong for the 1-wire bus, but it works in practice.
   ds18b20 := Ds18b20 pin
 
-  is_parasitic := ds18b20.is_parasitic
-  print "is parasitic: $is_parasitic"
+  is-parasitic := ds18b20.is-parasitic
+  print "is parasitic: $is-parasitic"
 
   (Duration --s=5).periodic:
-    print "Temperature: $(%.2f ds18b20.read_temperature) C"
+    print "Temperature: $(%.2f ds18b20.read-temperature) C"
 
   // The following close isn't necessary, as the periodic timer above will
   // never stop. In other cases, it is important to close the DS18B20.

@@ -1,12 +1,12 @@
 sdk: ^2.0.0-alpha.49
 prefixes:
   ds18b20: ..
-  one_wire: toit-1-wire
+  one-wire: toit-1-wire
 packages:
   ..:
     path: ..
     prefixes:
-      one_wire: toit-1-wire
+      one-wire: toit-1-wire
   toit-1-wire:
     url: github.com/toitware/toit-1-wire
     version: 2.1.0
