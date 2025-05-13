@@ -2,6 +2,7 @@
 // Use of this source code is governed by an MIT-style license that can be found
 // in the LICENSE file.
 
+import encoding.tison
 import system.assets
 import ds18b20.provider
 
@@ -34,12 +35,10 @@ main args:
     return
 
   decoded := assets.decode
-  configuration := decoded.get "configuration"
-  if configuration:
-    install-from-assets_ configuration
-    return
+  ["configuration", "artemis.defines"].do: | key/string |
+    configuration := decoded.get key
+    if configuration:
+      install-from-assets_ configuration
+      return
 
-  // TODO(floitsch): We shouldn't need to special case Artemis.
-  artemis-defines := decoded.get "artemis.defines"
-  if artemis-defines:
-    install-from-assets_ artemis-defines
+  throw "No configuration found."
