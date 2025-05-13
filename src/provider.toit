@@ -28,7 +28,7 @@ class TemperatureSensor implements providers.TemperatureSensor-v1:
           --pull-up=pull-up
 
   temperature-read -> float:
-    return sensor_.read_temperature
+    return sensor_.read-temperature
 
   close -> none:
     if bus_:
