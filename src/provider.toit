@@ -23,8 +23,9 @@ class TemperatureSensor implements providers.TemperatureSensor-v1:
       bus_ = one-wire.Bus pin_ --pull-up=pull-up
       sensor_ = Ds18b20 --id=id --bus=bus_
     else:
-      // There is no way to read the ID through the service interface API.
-      sensor_ = Ds18b20 pin_ --skip-id-read --pull-up=pull-up
+      sensor_ = Ds18b20 pin_
+          --skip-id-read  // There is no way to read the ID through the service.
+          --pull-up=pull-up
 
   temperature-read -> float:
     return sensor_.read_temperature
