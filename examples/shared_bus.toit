@@ -4,23 +4,23 @@
 
 import ds18b20 show Ds18b20
 import gpio
-import one_wire
+import one-wire
 
-GPIO_PIN_NUM ::= 32
+GPIO-PIN-NUM ::= 32
 
 main:
-  pin := gpio.Pin GPIO_PIN_NUM
-  bus := one_wire.Bus pin
+  pin := gpio.Pin GPIO-PIN-NUM
+  bus := one-wire.Bus pin
 
   id := 0x753c01f095df0228
   driver := Ds18b20 --id=id --bus=bus
 
-  is_parasitic := driver.is_parasitic
-  print "is parasitic: $is_parasitic"
-  if is_parasitic: return
+  is-parasitic := driver.is-parasitic
+  print "is parasitic: $is-parasitic"
+  if is-parasitic: return
 
   (Duration --s=5).periodic:
-    print "Temperature: $(%.2f driver.read_temperature) C"
+    print "Temperature: $(%.2f driver.read-temperature) C"
 
   // The following close isn't necessary, as the periodic timer above will
   // never stop. In other cases, it is important to close the driver.
