@@ -27,7 +27,7 @@ class TemperatureSensor implements providers.TemperatureSensor-v1:
           --skip-id-read  // There is no way to read the ID through the service.
           --pull-up=pull-up
 
-  temperature-read -> float:
+  temperature-read -> float?:
     return sensor_.read-temperature
 
   close -> none:

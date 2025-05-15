@@ -7,4 +7,5 @@ dependencies:
     url: github.com/toitware/toit-1-wire
     version: ^2.1.0
   sensors:
-    path: ../toit-sensors
+    url: github.com/toitware/toit-sensors
+    version: ^0.0.1

@@ -1,4 +1,4 @@
-sdk: ^2.0.0-alpha.120
+sdk: ^2.0.0-alpha.150
 prefixes:
   ds18b20: ..
   one_wire: toit-1-wire
@@ -14,4 +14,7 @@ packages:
     version: 2.3.0
     hash: b341bf2f0dec80c1cbd6deb774c45c52e52f183f
   toit-sensors:
-    path: ../../toit-sensors
+    url: github.com/toitware/toit-sensors
+    name: sensors
+    version: 0.0.1
+    hash: 8b76db6e4c08bd0d19f4d6bbc9eb235a4039f34b
