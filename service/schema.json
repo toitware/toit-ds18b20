@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-2020-12/schema",
+  "$id": "https://github.com/toitware/toit-ds18b20/service/configuration.json",
+  "title": "DS18B20 Configuration",
+  "description": "Configuration for the DS18B20 temperature sensor.",
+  "type": "object",
+  "required": [
+    "pin"
+  ],
+  "properties": {
+    "pin": {
+      "type": "integer",
+      "description": "The GPIO pin number to which the DS18B20 is connected."
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique identifier (as hex-string) of the DS18B20 sensor. This is used to identify the sensor in the system. If none is provide, it is assumed that the sensor is the only one connected to the bus."
+    },
+    "pull-up": {
+      "type": "boolean",
+      "description": "Whether to use a pull-up resistor on the data line. Most sensors already have a pull-up resistor, and don't need this option. By default, no pull-up is used."
+    }
+  }
+}
