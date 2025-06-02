@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-2020-12/schema",
-  "$id": "https://github.com/toitware/toit-ds18b20/service/configuration.json",
+  "$id": "https://github.com/toitware/toit-ds18b20/service/schema.json",
   "title": "DS18B20 Configuration",
   "description": "Configuration for the DS18B20 temperature sensor.",
   "type": "object",
