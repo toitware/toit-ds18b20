@@ -8,4 +8,4 @@ dependencies:
     version: ^2.1.0
   sensors:
     url: github.com/toitware/toit-sensors
-    version: ^0.0.1
+    version: ^1.0.0
