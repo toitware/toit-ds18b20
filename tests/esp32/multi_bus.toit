@@ -3,7 +3,6 @@
 // be found in the EXAMPLES_LICENSE file.
 
 import expect show *
-import gpio
 
 import ds18b20 show Ds18b20
 import one-wire
@@ -23,8 +22,7 @@ If all sensors are parasitic without any pull-up resistor, then
 GPIO-PIN-NUM ::= 18
 
 main:
-  pin := gpio.Pin GPIO-PIN-NUM
-  bus := one-wire.Bus pin
+  bus := one-wire.Bus GPIO-PIN-NUM
 
   // A broadcast device to address all devices on the bus.
   broadcast := Ds18b20.broadcast --bus=bus
@@ -98,6 +96,5 @@ main:
   devices.do: it.close
   broadcast.close
   bus.close
-  pin.close
 
   print "All tests passed."

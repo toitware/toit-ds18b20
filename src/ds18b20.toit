@@ -58,6 +58,9 @@ class Ds18b20:
   If there are multiple sensors, then the driver misbehaves. In that
     case use $(Ds18b20.constructor --id --bus) instead.
 
+  The $pin is a GPIO number. Passing a $gpio.Pin is deprecated; provide the integer
+    GPIO number instead.
+
   If $pull-up is true, then uses the pin's pullup resistor to power the
     1-wire bus. Many modules that take 3 inputs (VCC, GND, DATA) already
     connect the DATA pin to the VCC using a 4.7k resistor. In that case,
@@ -66,7 +69,9 @@ class Ds18b20:
 
   If $skip-id-read is true, then the driver does not read the device id.
   */
-  constructor pin/gpio.Pin --skip-id-read/bool=false --pull-up/bool=false:
+  // __TYPE-MIGRATION__ pin: gpio.Pin. Deprecated. Provide an integer instead.
+  // __TYPE-MIGRATION__ pin: int
+  constructor pin/any --skip-id-read/bool=false --pull-up/bool=false:
     bus_ = one-wire.Bus pin --pull-up=pull-up
     owns-bus_ = true
     is-single_ = true

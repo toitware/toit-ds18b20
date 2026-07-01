@@ -5,7 +5,6 @@
 import ds18b20 show Ds18b20
 import one-wire
 import one-wire.family show FAMILY-DS18B20 family-id family-to-string
-import gpio
 
 /**
 Demonstrates how to use multiple DS18B20 sensors on the same bus.
@@ -14,8 +13,7 @@ Demonstrates how to use multiple DS18B20 sensors on the same bus.
 GPIO-PIN-NUM ::= 18
 
 main:
-  pin := gpio.Pin GPIO-PIN-NUM
-  bus := one-wire.Bus pin
+  bus := one-wire.Bus GPIO-PIN-NUM
 
   // A broadcast device to address all devices on the bus.
   broadcast := Ds18b20.broadcast --bus=bus
@@ -82,4 +80,3 @@ main:
   devices.do: it.close
   broadcast.close
   bus.close
-  pin.close

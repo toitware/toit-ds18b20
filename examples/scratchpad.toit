@@ -4,13 +4,11 @@
 
 import ds18b20 show Ds18b20
 import expect show *
-import gpio
 
 GPIO-PIN-NUM ::= 18
 
 main:
-  pin := gpio.Pin GPIO-PIN-NUM
-  ds18b20 := Ds18b20 pin
+  ds18b20 := Ds18b20 GPIO-PIN-NUM
 
   // Use the low and high temperature registers as external memory.
   scratchpad := ds18b20.read-scratchpad
@@ -54,4 +52,3 @@ main:
   expect-equals 0x34 scratchpad[3]
 
   ds18b20.close
-  pin.close
