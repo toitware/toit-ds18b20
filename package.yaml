@@ -1,7 +1,7 @@
 name: ds18b20
 description: Driver for the DS18B20 temperature sensor.
 environment:
-  sdk: ^2.0.0-alpha.194.1
+  sdk: ^2.0.0-alpha.196
 dependencies:
   one_wire:
     url: github.com/toitware/toit-1-wire
