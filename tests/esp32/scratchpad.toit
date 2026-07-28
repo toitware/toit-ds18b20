@@ -11,7 +11,6 @@ Connect a single parasitic DS18B20 to GPIO pin 19.
 */
 
 import expect show *
-import gpio
 
 import ds18b20
 
@@ -19,10 +18,10 @@ POWERED-PIN := 18
 PARASITIC-PIN := 19
 
 main:
-  powered := ds18b20.Ds18b20 (gpio.Pin POWERED-PIN)
+  powered := ds18b20.Ds18b20 POWERED-PIN
   run-test powered --parasitic=false
 
-  parasitic := ds18b20.Ds18b20 (gpio.Pin PARASITIC-PIN) --pull-up
+  parasitic := ds18b20.Ds18b20 PARASITIC-PIN --pull-up
   run-test parasitic --parasitic
 
   print "All tests passed."

@@ -3,14 +3,12 @@
 // be found in the EXAMPLES_LICENSE file.
 
 import ds18b20 show Ds18b20
-import gpio
 import one-wire
 
 GPIO-PIN-NUM ::= 32
 
 main:
-  pin := gpio.Pin GPIO-PIN-NUM
-  bus := one-wire.Bus pin
+  bus := one-wire.Bus GPIO-PIN-NUM
 
   id := 0x753c01f095df0228
   driver := Ds18b20 --id=id --bus=bus
@@ -26,4 +24,3 @@ main:
   // never stop. In other cases, it is important to close the driver.
   driver.close
   bus.close
-  pin.close

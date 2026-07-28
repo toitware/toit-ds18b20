@@ -2,7 +2,6 @@
 // Use of this source code is governed by an MIT-style license that can be found
 // in the LICENSE file.
 
-import gpio
 import one-wire
 import sensors.providers
 
@@ -14,16 +13,14 @@ MINOR ::= 0
 
 class TemperatureSensor implements providers.TemperatureSensor-v1:
   bus_/one-wire.Bus? := null
-  pin_/gpio.Pin? := ?
   sensor_/Ds18b20? := ?
 
   constructor pin/int --id/int? --pull-up/bool=false:
-    pin_ = gpio.Pin pin
     if id:
-      bus_ = one-wire.Bus pin_ --pull-up=pull-up
+      bus_ = one-wire.Bus pin --pull-up=pull-up
       sensor_ = Ds18b20 --id=id --bus=bus_
     else:
-      sensor_ = Ds18b20 pin_
+      sensor_ = Ds18b20 pin
           --skip-id-read  // There is no way to read the ID through the service.
           --pull-up=pull-up
 
@@ -37,9 +34,6 @@ class TemperatureSensor implements providers.TemperatureSensor-v1:
     if sensor_:
       sensor_.close
       sensor_ = null
-    if pin_:
-      pin_.close
-      pin_ = null
 
 install pin/int --id/int?=null --pull-up/bool=false -> providers.Provider:
   provider := providers.Provider NAME
